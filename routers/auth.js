@@ -107,8 +107,78 @@ router.post('/login', [
         { employee_id: username.toUpperCase() }
       ]
     });
+
+
+
     
-    // ... rest of your existing login code
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+    
+    // Check if user is active
+    if (user.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Account is not active. Please contact administrator.'
+      });
+    }
+    
+    // Check password
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect Password credentials'
+      });
+    }
+    
+    // Update last login
+    user.last_login = new Date();
+    await user.save();
+    
+    // Generate tokens
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        employee_id: user.employee_id
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRE || '24h' }
+    );
+    
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d' }
+    );
+    
+    // Log activity
+    await auth.logActivity(req, 'login', 'user', user._id.toString(), 'User logged in');
+    
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          employee_id: user.employee_id,
+          department: user.department,
+          phone: user.phone
+        },
+        token,
+        refresh_token: refreshToken
+      }
+    });
+    
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
