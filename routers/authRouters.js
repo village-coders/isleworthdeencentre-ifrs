@@ -7,7 +7,7 @@ const isLoggedIn = require("../middlewares/isLoggedIn")
 
 
 
-authRouter.post("/signup", isLoggedIn, signup)
+authRouter.post("/signup", signup)
 authRouter.get("/login", login)
 authRouter.put("/update-password/:id", isLoggedIn, updateUserPassword)
 
