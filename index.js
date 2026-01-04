@@ -18,6 +18,8 @@ app.use(cors({
   credentials: true
 }));
 
+app.set('trust proxy', 1)
+
 
 // Rate limiting
 const limiter = rateLimit({
