@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const claimSchema = new mongoose.Schema({
-  // claim_id: {
-  //   type: String,
-  //   required: true,
-  //   unique: true,
-  //   uppercase: true
-  // },
+  claim_id: {
+    type: String,
+    required: true,
+    unique: true,
+    uppercase: true
+  },
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -113,29 +113,29 @@ const claimSchema = new mongoose.Schema({
 });
 
 // Generate claim ID before saving
-claimSchema.pre('save', async function(next) {
-  if (this.isNew && !this.claim_id) {
-    const lastClaim = await this.constructor.findOne().sort('-claim_id');
-    if (!lastClaim) {
-      this.claim_id = 'HFA-C-3001';
-    } else {
-      const lastId = lastClaim.claim_id;
-      const match = lastId.match(/HFA-C-(\d+)/);
-      if (match) {
-        const nextNum = parseInt(match[1]) + 1;
-        this.claim_id = `HFA-C-${nextNum}`;
-      } else {
-        this.claim_id = `HFA-C-${3000 + (await this.constructor.countDocuments()) + 1}`;
-      }
-    }
-  }
-  next();
-});
+// claimSchema.pre('save', async function(next) {
+//   if (this.isNew && !this.claim_id) {
+//     const lastClaim = await this.constructor.findOne().sort('-claim_id');
+//     if (!lastClaim) {
+//       this.claim_id = 'HFA-C-3001';
+//     } else {
+//       const lastId = lastClaim.claim_id;
+//       const match = lastId.match(/HFA-C-(\d+)/);
+//       if (match) {
+//         const nextNum = parseInt(match[1]) + 1;
+//         this.claim_id = `HFA-C-${nextNum}`;
+//       } else {
+//         this.claim_id = `HFA-C-${3000 + (await this.constructor.countDocuments()) + 1}`;
+//       }
+//     }
+//   }
+//   next();
+// });
 
 // Indexes for better query performance
 claimSchema.index({ user_id: 1, status: 1 });
 claimSchema.index({ status: 1 });
 claimSchema.index({ date: -1 });
-claimSchema.index({ claim_id: 1 }, { unique: true });
+// claimSchema.index({ claim_id: 1 }, { unique: true });
 
 module.exports = mongoose.model('Claim', claimSchema);
