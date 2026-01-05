@@ -2,7 +2,7 @@
 const axios = require('axios');
 
 async function testLogin() {
-  const baseURL = 'http://localhost:500/api';
+  const baseURL = 'https://hfa-internal-record-system.onrender.com/api';
   
   console.log('Testing admin login...\n');
   

@@ -163,6 +163,7 @@ router.post('/',
   upload.single('receipt'),
   [
     body('date').isISO8601().withMessage('Valid date is required'),
+    body('claim_id').trim().notEmpty().withMessage('Claim_Id is required'),
     body('description').trim().notEmpty().withMessage('Description is required'),
     body('category').isIn(['Travel', 'Meal', 'Office Supplies', 'Equipment', 'Training', 'Other']),
     body('amount').isFloat({ min: 0 }).withMessage('Valid amount is required'),
@@ -171,6 +172,7 @@ router.post('/',
   async (req, res) => {
   try {
     // Check validation errors
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -193,6 +195,7 @@ router.post('/',
       user_id: req.user.userId,
       user_name: user.name,
       employee_id: user.employee_id,
+      claim_id: req.body.claim_id,
       date: req.body.date,
       description: req.body.description,
       category: req.body.category,
@@ -200,6 +203,7 @@ router.post('/',
       currency: req.body.currency || 'GBP',
       notes: req.body.notes
     };
+    
     
     // Add receipt if uploaded
     if (req.file) {
