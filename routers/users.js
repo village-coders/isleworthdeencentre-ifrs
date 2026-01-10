@@ -273,8 +273,17 @@ router.put('/:id',
 // @route   put /api/users/:id/deactivate
 // @desc    update user (soft delete by changing status)
 // @access  Private (Admin only)
-router.put('/:id/deactivate', auth.verifyToken, auth.checkRole('admin'), async (req, res) => {
+router.put('/:id/status', auth.verifyToken, auth.checkRole('admin'), async (req, res) => {
+  const { status } = req.body;
   try {
+
+    if(!status){
+      return res.status(400).json({
+        success: false,
+        message: 'Status is required'
+      });
+    }
+
     const user = await User.findById(req.params.id);
     
     if (!user) {
@@ -295,7 +304,7 @@ router.put('/:id/deactivate', auth.verifyToken, auth.checkRole('admin'), async (
     // Soft deactivate by changing status
     
 
-    user.status = 'inactive';
+    user.status = status;
     await user.save();
     
     // Log activity
@@ -304,53 +313,7 @@ router.put('/:id/deactivate', auth.verifyToken, auth.checkRole('admin'), async (
     
     res.json({
       success: true,
-      message: 'User deactivated successfully'
-    });
-    
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
-  }
-});
-
-
-// @route   update /api/users/:id/activate
-// @desc    Activate user (Activate by changing status)
-// @access  Private (Admin only)
-router.put('/:id/activate', auth.verifyToken, auth.checkRole('admin'), async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-    
-    // Prevent deleting own account
-    if (user._id.toString() === req.user.userId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot active your own account'
-      });
-    }
-    
-    // Soft delete by changing status
-    
-
-    user.status = 'active';
-    await user.save();
-    
-    // Log activity
-    await auth.logActivity(req, 'delete', 'user', user._id.toString(), 
-      `Activated user ${user.employee_id}`);
-    
-    res.json({
-      success: true,
-      message: 'User activated successfully'
+      message: `User status updated to ${status} successfully`
     });
     
   } catch (error) {

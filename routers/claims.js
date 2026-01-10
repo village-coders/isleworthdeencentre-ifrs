@@ -158,11 +158,18 @@ router.post('/',
   upload.single('image'),
   [
     body('date').isISO8601().withMessage('Valid date is required'),
-    body('claim_id').trim().notEmpty().withMessage('Claim_Id is required'),
-    body('description').trim().notEmpty().withMessage('Description is required'),
-    body('claim_type').isIn(['Audit', 'Supervision', 'Audit / Supervision', 'Payment Request Form', 'Meeting', 'Misscellaneous', 'Approved Supplier IT (Yearly)', 'Approved Supplier Admin (Yearly)', 'Approved Supplier IT (Monthly)', 'Approved Supplier Admin (Monthly)', 'Approved Supplier Training (Yearly)', 'Approved Supplier Training (Monthly)', 'Approved Supplier Advertisement (Yearly)', 'Approved Supplier Admin (Monthly)']),
-    body('amount').isFloat({ min: 0 }).withMessage('Valid amount is required'),
-    body('reason').notEmpty().withMessage('Rejection reason is required').trim(),
+    body('claim_id').trim().optional(),
+    body('expense_description').trim().optional(),
+    body('category').trim().optional(),
+    body('currency').trim().notEmpty().withMessage('Currency is required'),
+    body('company_name').trim().notEmpty().withMessage('Company Name is required'),
+    body('bank_transfer_amount').isFloat({ min: 0 }).optional(),
+    body('vat_amount').optional(),
+    body('cash_amount').optional(),
+    body('contact_person').trim().notEmpty().withMessage('Contact Person is required'),
+    body('contact_email').isEmail().withMessage('Valid email is required'),
+    body('amount').isFloat({ min: 0 }),
+    body('reason').optional().trim(),
     body('notes').optional().trim(),
     body('image').optional()
   ],
@@ -172,17 +179,20 @@ router.post('/',
 
     // Add receipt if uploaded
 
-    console.log(req.body)
     
-
+    
     
     const errors = validationResult(req);
+    console.log(errors.array())
+
+
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        errors: errors.array()
+        message: errors.array().forEach(error => error.msg + "in" + error.path)
       });
     }
+
     
     // Get user details
     const user = await User.findById(req.user.userId);
@@ -195,20 +205,15 @@ router.post('/',
     
     // Create claim
     const claimData = {
+      ...req.body,
       user_id: req.user.userId,
       user_name: user.name,
       employee_id: user.employee_id,
-      claim_id: req.body.claim_id,
-      date: req.body.date,
-      description: req.body.description,
-      claim_type: req.body.claim_type,
-      amount: req.body.amount,
-      currency: req.body.currency || '$',
-      notes: req.body.notes,
-      reason: req.body.reason,
-      contact_person: req.body.contact_person,
-      contact_email: req.body.contact_email
+      claim_type: req.body.category,
     };
+    
+    
+    // console.log(claimData)
     
     
     // Add receipt if uploaded
@@ -330,6 +335,8 @@ router.put('/:id/status',
     const { status, notes } = req.body;
   try {
     const claim = await Claim.findById(req.params.id);
+
+    console.log(status)
     
     if (!claim) {
       return res.status(404).json({
@@ -338,7 +345,7 @@ router.put('/:id/status',
       });
     }
 
-    if (claim.status === status) {
+    if (claim.status.toLocaleLowerCase() === status.toLocaleLowerCase()) {
       return res.status(400).json({
         success: false,
         message: `Claim is already ${status}`
@@ -352,7 +359,7 @@ router.put('/:id/status',
     claim.status = status;
     claim.approved_by = req.user.userId;
     claim.approved_at = new Date();
-    if (req.body.notes) claim.notes = notes;
+    if (req.body.notes) claim.notesByAdmin = notes;
     
     await claim.save();
     
@@ -363,14 +370,15 @@ router.put('/:id/status',
     res.json({
       success: true,
       data: claim,
-      message: `Claim successfully changed to ${status}`
+      message: `Claim successfully changed to ${status.toUpperCase()}`
     });
     
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
+    console.log(error)
   }
 });
 
@@ -517,7 +525,7 @@ router.delete('/:id', auth.verifyToken, async (req, res) => {
         message: 'Access denied'
       });
     }
-    
+    console.log(claim.status)
     // Only allow deletion for new claims
     if (claim.status !== 'new') {
       return res.status(400).json({

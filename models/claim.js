@@ -20,19 +20,17 @@ const claimSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  category: {
+    type: String,
+  },
   date: {
     type: Date,
     required: true
   },
-  description: {
-    type: String,
-    required: true,
-    trim: true
-  },
   claim_type: {
     type: String,
     required: true,
-    enum: ['Audit', 'Supervision', 'Audit / Supervision', 'Payment Request Form', 'Meeting', 'Misscellaneous', 'Approved Supplier IT (Yearly)', 'Approved Supplier Admin (Yearly)', 'Approved Supplier IT (Monthly)', 'Approved Supplier Admin (Monthly)', 'Approved Supplier Training (Yearly)', 'Approved Supplier Training (Monthly)', 'Approved Supplier Advertisement (Yearly)', 'Approved Supplier Admin (Monthly)']
+    // enum: ['Audit', 'Supervision', 'Audit / Supervision', 'Payment Request Form', 'Meeting', 'Misscellaneous', 'Approved Supplier IT (Yearly)', 'Approved Supplier Admin (Yearly)', 'Approved Supplier IT (Monthly)', 'Approved Supplier Admin (Monthly)', 'Approved Supplier Training (Yearly)', 'Approved Supplier Training (Monthly)', 'Approved Supplier Advertisement (Yearly)', 'Approved Supplier Admin (Monthly)']
   },
   amount: {
     type: Number,
@@ -50,10 +48,16 @@ const claimSchema = new mongoose.Schema({
   receipt_filename: {
     type: String
   },
+  receipt: {
+    type: String
+  },
   reason: {
     type: String
   },
   expense_type: {
+    type: String
+  },
+  expense_description: {
     type: String
   },
   bank_transfer_amount: {
@@ -70,10 +74,14 @@ const claimSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['new', 'pending', 'approved', 'rejected', 'paid', 'under_review'],
+    enum: ['new','approved', 'rejected', 'paid', 'pending'],
     default: 'new'
   },
   notes: {
+    type: String,
+    trim: true
+  },
+  notesByAdmin: {
     type: String,
     trim: true
   },
@@ -102,6 +110,9 @@ const claimSchema = new mongoose.Schema({
     type: Date
   },
   payment_reference: {
+    type: String
+  },
+  company_name: {
     type: String
   },
   contact_person: {
