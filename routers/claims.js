@@ -49,9 +49,7 @@ router.get('/', auth.verifyToken, async (req, res) => {
     const query = {};
     
     // Role-based filtering
-    if (req.user.role !== 'admin') {
-      query.user_id = req.user.userId;
-    } else if (user_id) {
+    if (user_id) {
       query.user_id = user_id;
     }
     
