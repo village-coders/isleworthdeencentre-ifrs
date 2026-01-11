@@ -507,7 +507,7 @@ router.put('/:id/status',
 // @access  Private
 
 
-router.delete('/:id', auth.verifyToken, async (req, res) => {
+router.delete('/:id/delete', auth.verifyToken, async (req, res) => {
   try {
     const claim = await Claim.findById(req.params.id);
     
@@ -519,7 +519,7 @@ router.delete('/:id', auth.verifyToken, async (req, res) => {
     }
     
     // Check ownership
-    if (req.user.role !== 'admin' && claim.user_id.toString() !== req.user.userId) {
+    if (claim.user_id.toString() !== req.user.userId) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -527,7 +527,7 @@ router.delete('/:id', auth.verifyToken, async (req, res) => {
     }
     console.log(claim.status)
     // Only allow deletion for new claims
-    if (claim.status !== 'new') {
+    if (claim.status !== 'new' && 'pending') {
       return res.status(400).json({
         success: false,
         message: 'Only new claims can be deleted'

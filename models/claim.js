@@ -74,7 +74,7 @@ const claimSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['new','approved', 'rejected', 'paid', 'pending'],
+    enum: ['new','verified', 'rejected', 'paid', 'approved'],
     default: 'new'
   },
   notes: {
