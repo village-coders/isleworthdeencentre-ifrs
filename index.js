@@ -48,7 +48,7 @@ const corsOptions = {
 
 
 app.use(cors({
-    origin: "*"
+  origin: "*"
 }));
 
 app.set('trust proxy', 1)
