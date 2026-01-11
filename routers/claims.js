@@ -263,7 +263,7 @@ router.put('/:id', auth.verifyToken, upload.single('image'), async (req, res) =>
     }
     
     // Check ownership and status
-    if (req.user.role !== 'admin' && claim.user_id.toString() !== req.user.userId) {
+    if (req.user.role !== 'admin' || claim.user_id.toString() !== req.user.userId) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -271,7 +271,7 @@ router.put('/:id', auth.verifyToken, upload.single('image'), async (req, res) =>
     }
     
     // Only allow updates for new or pending claims
-    if (!['new', 'pending', 'recommendation'].includes(claim.status)) {
+    if (!['new', 'pending', 'verified'].includes(claim.status)) {
       return res.status(400).json({
         success: false,
         message: 'Cannot update claim in current status'
@@ -323,7 +323,7 @@ router.put('/:id', auth.verifyToken, upload.single('image'), async (req, res) =>
 // @access  Private (Admin)
 router.put('/:id/status', 
   auth.verifyToken,
-  auth.checkRole('admin', 'approver'),
+  auth.checkRole('admin', 'financial officer', 'accountant', 'administrator'),
   [
     body('notes').optional().trim(),
     body('status').isIn(['approved', 'rejected', 'paid', 'pending']).withMessage('Invalid status')
@@ -332,6 +332,7 @@ router.put('/:id/status',
 
     const { status, notes } = req.body;
   try {
+
     const claim = await Claim.findById(req.params.id);
 
     console.log(status)
