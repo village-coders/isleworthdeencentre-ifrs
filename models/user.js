@@ -91,15 +91,15 @@ userSchema.methods.toJSON = function() {
 // Static method to generate employee ID
 userSchema.statics.generateEmployeeId = async function() {
   const lastUser = await this.findOne().sort('-employee_id');
-  if (!lastUser) return 'HFA-W-1001';
+  if (!lastUser) return 'ISC-W-1001';
   
   const lastId = lastUser.employee_id;
-  const match = lastId.match(/HFA-W-(\d+)/);
+  const match = lastId.match(/ISC-W-(\d+)/);
   if (match) {
     const nextNum = parseInt(match[1]) + 1;
-    return `HFA-W-${nextNum}`;
+    return `ISC-W-${nextNum}`;
   }
-  return `HFA-W-${1000 + (await this.countDocuments()) + 1}`;
+  return `ISC-W-${1000 + (await this.countDocuments()) + 1}`;
 };
 
 module.exports = mongoose.model('User', userSchema);
